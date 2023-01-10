@@ -2,13 +2,16 @@ package com.company.multitenancy_flow.entity;
 
 import io.jmix.core.HasTimeZone;
 import io.jmix.core.annotation.Secret;
+import io.jmix.core.annotation.TenantId;
 import io.jmix.core.entity.annotation.JmixGeneratedValue;
 import io.jmix.core.entity.annotation.SystemLevel;
 import io.jmix.core.metamodel.annotation.DependsOnProperties;
 import io.jmix.core.metamodel.annotation.InstanceName;
 import io.jmix.core.metamodel.annotation.JmixEntity;
+import io.jmix.multitenancy.core.AcceptsTenant;
 import io.jmix.security.authentication.JmixUserDetails;
 import org.springframework.security.core.GrantedAuthority;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.Collection;
@@ -20,43 +23,45 @@ import java.util.UUID;
 @Table(name = "USER_", indexes = {
         @Index(name = "IDX_USER__ON_USERNAME", columnList = "USERNAME", unique = true)
 })
-public class User implements JmixUserDetails, HasTimeZone {
-
-    @Id
-    @Column(name = "ID")
-    @JmixGeneratedValue
-    private UUID id;
-
-    @Version
-    @Column(name = "VERSION", nullable = false)
-    private Integer version;
+public class User implements JmixUserDetails, HasTimeZone, AcceptsTenant {
 
     @Column(name = "USERNAME", nullable = false)
     protected String username;
-
     @Secret
     @SystemLevel
     @Column(name = "PASSWORD")
     protected String password;
-
     @Column(name = "FIRST_NAME")
     protected String firstName;
-
     @Column(name = "LAST_NAME")
     protected String lastName;
-
     @Email
     @Column(name = "EMAIL")
     protected String email;
-
     @Column(name = "ACTIVE")
     protected Boolean active = true;
-
     @Column(name = "TIME_ZONE_ID")
     protected String timeZoneId;
-
     @Transient
     protected Collection<? extends GrantedAuthority> authorities;
+    @Id
+    @Column(name = "ID", nullable = false)
+    @JmixGeneratedValue
+    private UUID id;
+    @Version
+    @Column(name = "VERSION", nullable = false)
+    private Integer version;
+    @TenantId
+    @Column(name = "TENANT")
+    private String tenant;
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
 
     public UUID getId() {
         return id;
@@ -78,6 +83,10 @@ public class User implements JmixUserDetails, HasTimeZone {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public String getUsername() {
         return username;
@@ -93,10 +102,6 @@ public class User implements JmixUserDetails, HasTimeZone {
 
     public void setActive(Boolean active) {
         this.active = active;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getEmail() {
@@ -167,5 +172,10 @@ public class User implements JmixUserDetails, HasTimeZone {
 
     public void setTimeZoneId(String timeZoneId) {
         this.timeZoneId = timeZoneId;
+    }
+
+    @Override
+    public String getTenantId() {
+        return tenant;
     }
 }
